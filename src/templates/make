@@ -1,6 +1,6 @@
-CC := ${MAKE_CC}
-CFLAGS := ${MAKE_CFLAGS}
-EXE := ${TITLE}
+CC := $MAKE_CC
+CFLAGS := $MAKE_CFLAGS
+EXE := $TITLE
 
 .PHONY: all clean clear
 

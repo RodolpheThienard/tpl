@@ -1,0 +1,48 @@
+#let project(title: "", authors: (), date: none, body, cours: none) = {
+  set document(author: authors, title: title)
+  set text(font: "IBM Plex Mono", lang: "fr")
+  set page(numbering: "1", number-align: center)
+  set par(justify: true)
+  set page(numbering: "1/1")
+
+  let number-until-with(max-level, schema) = (..numbers) => {
+    if numbers.pos().len() <= max-level {
+      numbering(schema, ..numbers)
+    }
+  }
+
+  set heading(numbering: number-until-with(1, "I.a"))
+  show raw.where(block: true): it => {
+      set text(font: "IBM Plex Mono", size: 8pt)
+      set align(left)
+      set block(fill: luma(240), inset: 10pt, radius: 4pt, width: 100%,stroke: rgb("#000").lighten(80%),)
+      it
+  }
+  show raw.where(block: false): box.with(
+    fill: luma(240),
+    inset: (x: 3pt, y: 0pt),
+    outset: (y: 3pt),
+    radius: 2pt
+  )
+  show raw.where(block: false): text.with(font: "IBM Plex Mono")
+  line(length: 100%)
+  align(center)[
+    #block(text(weight: 700, 1.75em, title))
+    #cours
+    #v(1em, weak: true)
+    #date
+    #v(1em, weak: true)
+    #authors
+  ]
+  line(length: 100%)
+
+  body
+}
+
+#show: project.with(
+  title: $TITLE,
+  authors: $AUTHOR,
+  date: ${DATE},
+  cours: "TODO"
+)
+
