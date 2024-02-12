@@ -120,6 +120,9 @@ for target in "${targets[@]}"; do
       out="$target" ext="${target##*.}"
       base="$(basename "$target")" base="${base%.*}"
       export TITLE="$base"
+      if [ $ext == "typ" ];then
+        cp "$TPL_TEMP_DIR/template.typ" "$TPL_TEMP_DIR/logo.png"  .
+      fi
       ;;
 
     *)  # no dot, assuming extension only
