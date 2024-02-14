@@ -1,0 +1,11 @@
+#import "template-diapo.typ" : diapo, transition
+
+#show: diapo.with(
+  title: "title",
+  short-title: "short-title",
+  author: ("Rodolphe THIENARD"),
+  date: [#datetime.today().display("[Month repr:long] [day], [year]")],
+)
+
+#transition[Introduction]
+= Introduction

@@ -123,6 +123,11 @@ for target in "${targets[@]}"; do
       if [ $ext == "typ" ];then
         cp "$TPL_TEMP_DIR/template.typ" "$TPL_TEMP_DIR/logo.png"  .
       fi
+      if [ $ext == "diapo" ];then
+        out="$base.typ"
+        echo "$target"
+        cp "$TPL_TEMP_DIR/template-diapo.typ"  .
+      fi
       ;;
 
     *)  # no dot, assuming extension only
