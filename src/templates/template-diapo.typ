@@ -1,113 +1,137 @@
-#let scriptsize = 8pt
-#let lastpage-number = locate(pos => pos.position())
-#let page_number = locate(loc => { counter(page).update(counter(page).at(loc)) })
+#let main_color = rgb("663399") //rgb(0,55,155)
+#let transition_color = rgb("663399") //rgb(0,55,155)
+#let backgroung_start = none
 
-#let transition(
-	// The slide accent color. Default is a vibrant yellow.
-	accent-color: rgb("663399"),//"f3bc54"),
+#let page_break_flag = state("page_break_flag",true)
 
-	// The slide content.
-	body,
-) = {
-	page(
-		width: 15cm,
-		height: 10cm,
-		background: rect(width: 100%, height: 100%, fill: accent-color),
-		header: none,
-		footer: none,
-    numbering: none,
+#let beamer_start( title:none, subtitle:none, author:none, date:none) = {
+  page(
+    margin: (top:5%, bottom: 5%, left: 5%, right:5%),
+    background: none, //image(backgroung_start),
+    header: none
   )[
-		#set align(center+horizon)
-		#set text(28pt, fill: white, weight: "bold")
-    #body
-//    #page_number
-]
+      #align(center+horizon, text(25pt, weight: "bold", title))
+      #align(center+horizon, text(17pt, weight: "regular", author))
+      #align(right+bottom, text(15pt, date))
+    
+  ] 
 }
 
-#let diapo(
-	// The presentation's title, which is displayed on the title slide.
-	title: [Title],
 
-	// The presentation's author, which is displayed on the title slide.
-	author: none,
+#let beamer_catalogs() = {
+  set page(
+    margin: (top:0%, bottom: 0%, left: 0%, right:10%),
+  )
+  set outline(
+      title: none,
+      depth: 2,
+      indent: 2em,
+      fill: none
+  )
+  show outline.entry.where(level:1): it => {
+    v(30pt, weak: true)
+    text(fill: main_color.lighten(10%), size: 20pt, weight: "bold",it)
+  }
+  show outline.entry.where(level:2):it => {
+    text(fill: main_color.lighten(10%),size: 15pt, weight: "regular",it)
+  }
+  grid(
+    columns:(35%, 70%),
+    column-gutter: 16%,
+    align(
+      center+horizon, 
+      box(
+        fill: main_color,
+        width: 100%,
+        height: 100%,
+        text(fill: white, size: 40pt, hyphenate: true, weight: "bold", [Outline])
+      ),
+    ),
+    align(center+horizon, outline())
+  )  
+}
 
-	// The date, displayed on the title slide.
-	date: none,
-
-	// If true, display the total number of slide of the presentation.
-	display-lastpage: true,
-
-	// If set, this will be displayed on top of each slide.
-	short-title: none,
-
-	// The presentation's content.
-	body
-) = {
-	// Ensure that the type of `author` is an array
-	author = if type(author) == "string" { ((name: author),) }
-		else if type(author) == "array" { author }
-		else { panic("expected string or array, found " + type(author)) }
-
-	// Set the metadata.
-	set document(title: title, author: author.map(author => author.name))
-
-	// Configure page and text properties.
-	set text(font: "PT Sans", weight: "regular")
-	set page(
-		width: 15cm,
-		height: 10cm,
-		header: if short-title != none {
-			set align(right)
-			set text(size: scriptsize)
-			short-title
-		},
-		footer: [
+#let beamer_content(body) = {
+  set page(
+    margin: (top:20%, bottom: 10%, left: 5%, right:5%),
+    footer: [
 			#let lastpage-number = locate(pos => counter(page).final(pos).at(0))
 			#set align(right)
-			#text(size: scriptsize)[
+			#text(size: 10pt)[
 				#counter(page).display("1")
-				#if (display-lastpage) [\/ #lastpage-number]
+				\/ #lastpage-number
 			]
 		],
-	)
+    header: locate(loc => {
+      let title = query(heading.where(level:1).before(loc),loc).last().body
+      grid(
+        rows:(70%, 10%),
+        row-gutter: 0%,
+        grid(
+          columns:(50%, 50%),
+          align(left+horizon, text(fill: main_color,   size: 25pt, weight: "bold", title)),
+          align(left+horizon, box(height: 100%, width:100%)),
+        ),
+        align(center+bottom, line(length: 100%, stroke: (paint:main_color, thickness:1pt)))
+      )
+    })
+  )
 
-	// Display the title page.
-	page(background: none, header: none, footer: none)[
-		#set align(center+horizon)
-		#set text(24pt, weight: "light")
-		#title
+  show heading.where(level:1):it => {
+    set page(
+      margin: (top:5%, bottom: 10%, left: 5%, right:5%),
+      fill: transition_color,
+      header: none, 
+      background: none
+    )
+    align(center+horizon, text(fill: white, size: 40pt, it))
+  }
 
-		#set text(14pt)
-		#let count = author.len()
-		#let ncols = calc.min(count, 3)
-		#grid(
-			columns: (auto,) * ncols,
-			column-gutter: 16pt,
-			row-gutter: 24pt,
-			..author.map(author => {
-				author.name
-				if (author.keys().contains("affiliation")) {
-					linebreak()
-					author.affiliation
-				}
-				if (author.keys().contains("email")) {
-					linebreak()
-					link("mailto:" + author.email)
-				}
-			}),
-		)
+  show heading.where(level:2): it => {
+    locate( loc => {
+      let level_1_now_title = query(heading.where(level:1).before(loc),loc).last().body
+      let level_2_now_title = query(heading.where(level:2).before(loc),loc).last().body
     
-		#text(features: ("case",))[#date]
-	]
-
-	// Customize headings to show new slides.
-	show heading: set text(font: ("Avenir", "Inter Display", "Inter", "Arial"))
-	show heading.where(level: 1): it => {
-		pagebreak()
-		align(top, it)
-		v(1em)
-	}
-
-	// Add the body.
-	body
+      let first_title = none
+      let get = false
+      for item in query(heading.where(level:1).or(heading.where(level:2)),loc) {
+        if get {
+          if item.level == 2 {
+            first_title = item.body
+          }
+          break
+        } else {
+          if item.level == 1 and item.body == level_1_now_title {
+            get = true
+          }
+        }
+      }
+      
+      if first_title != level_2_now_title {
+        pagebreak()
+      }
+    })
+    align(top, text(size: 20pt, it))
+    v(1em)
+  }
+  body
 }
+
+#let beamer_end(end) = {
+  set page(fill: main_color)
+  set align(left+horizon)
+  text(40pt, weight: "bold", fill: white, end )
+}
+
+#let beamer( title:none, subtitle:none, author:none, date:datetime(year: 2023, month: 7, day: 15), end:none, body) = {
+  set page(
+    paper: "presentation-16-9",
+  )
+  set text(font: "Linux Libertine", size:18pt, weight: "regular")
+  beamer_start(title:title, author:author, date:date)
+  beamer_catalogs()
+  beamer_content(body)
+  beamer_end(end)
+}
+
+

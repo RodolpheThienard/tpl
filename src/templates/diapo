@@ -1,11 +1,8 @@
-#import "template-diapo.typ" : diapo, transition
+#import "template-diapo.typ" : beamer
 
-#show: diapo.with(
+#show: beamer.with(
   title: "title",
-  short-title: "short-title",
-  author: ("Rodolphe THIENARD"),
+  author: "RodolpheThienard@github",
   date: [#datetime.today().display("[Month repr:long] [day], [year]")],
+  end: "Merci pour votre attention",
 )
-
-#transition[Introduction]
-= Introduction
